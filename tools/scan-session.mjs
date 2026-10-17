@@ -17,6 +17,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import * as zlib from 'node:zlib'
 import { detectInText } from '../src/detector.js'
+import { decodeLog } from './zstd-log.mjs'
 
 const args = process.argv.slice(2)
 const asJson = args.includes('--json')
@@ -39,15 +40,7 @@ function* files(p) {
 
 /** @param {string} path */
 function readText(path) {
-  const buf = readFileSync(path)
-  // zstd 魔数 28 B5 2F FD
-  if (buf.length >= 4 && buf.readUInt32LE(0) === 0xfd2fb528) {
-    if (typeof zlib.zstdDecompressSync !== 'function') {
-      throw new Error('此 Node 版本不支持 zstd，请用 Node 22.15+ 或先解压')
-    }
-    return zlib.zstdDecompressSync(buf).toString('utf8')
-  }
-  return buf.toString('utf8')
+  return decodeLog(readFileSync(path))
 }
 
 const results = []
