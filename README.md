@@ -1,5 +1,8 @@
 # dsh-loop-rescue
 
+> **2026-10-17 修复：** 早期 `tools/clean-session.mjs` 用 `zlib.zstdDecompressSync` 读日志（只解第一帧，真实 DSH 日志读不到内容），并把清洗结果压成单帧写回（DSH 会把这种会话当损坏、从列表里静默隐藏）。现已改为逐帧读、头部单独成帧写。更完整的会话管理（升级、归档、回收站、空会话、修复被隐藏的会话）见 [dsh-session-manager](https://github.com/citydirector/dsh-session-manager)。
+
+
 DSH 循环救援插件：模型陷入重复（`Now. / OK. / Emit. / Producing.` 轮转、段落刷屏）时，从流内部切断，**把循环部分从落盘内容里剪掉**，再自动续跑。
 
 和单纯截断相比，关键区别是：被切断的那条消息在下一轮上下文里**不含循环**，模型不会再读一遍自己的复读，然后接着复读。
