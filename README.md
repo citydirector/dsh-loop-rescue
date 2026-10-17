@@ -82,6 +82,23 @@ node tools/scan-session.mjs <会话文件> --json
 
 支持纯 jsonl 和 zstd 压缩的会话文件（zstd 需要 Node 22.15+）。脚本只依赖 `src/detector.js`，普通 node 就能运行。
 
+## 救回已经嗝屁的会话
+
+插件只能拦住新的循环；历史里已经提交的循环会被模型继续模仿。DSH 发给模型的请求是会话日志的冻结投影，插件改不了，所以用离线脚本在 **DSH 完全退出后** 直接清洗会话文件。没装过插件的老会话同样适用。
+
+```powershell
+node tools/clean-session.mjs            # 自动找数据目录，列出有循环的会话（标题 / 最后使用时间 / 循环段数），按序号选，回车=最新
+node tools/clean-session.mjs --dry-run  # 只看会改哪里
+node tools/clean-session.mjs --undo     # 从备份恢复
+```
+
+Windows 下也可以双击 `tools\clean-session.cmd`，或把某个会话文件夹拖到它上面。
+
+- 数据目录自动在 `D:\dsh-desktop\data`、`D:\dsh-portable\data` 等位置查找 `sessions\`；找不到时用 `--data <数据目录>` 指定。
+- 只改命中的 `assistant/message`：正文/推理截到循环起点，`data.stream` 同步截断，并移除该消息的 `source.replayState`（里面有原文副本）。其余行逐字节不变。
+- 改之前先备份到 `<数据目录>\sessions-loop-rescue-backup\`；检测到 DSH 进程在运行会拒绝执行（`--force` 可跳过，不推荐）。
+- 目前只支持 v4 会话文件；需要 Node 22.15+。
+
 ## 测试
 
 ```bash
