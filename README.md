@@ -1,120 +1,140 @@
 # dsh-loop-rescue
 
-> **2026-10-17 修复：** 早期 `tools/clean-session.mjs` 用 `zlib.zstdDecompressSync` 读日志（只解第一帧，真实 DSH 日志读不到内容），并把清洗结果压成单帧写回（DSH 会把这种会话当损坏、从列表里静默隐藏）。现已改为逐帧读、头部单独成帧写。更完整的会话管理（升级、归档、回收站、空会话、修复被隐藏的会话）见 [dsh-session-manager](https://github.com/citydirector/dsh-session-manager)。
+[English](README.md) · [简体中文](README.zh-CN.md)
 
+[![Release](https://img.shields.io/github/v/tag/citydirector/dsh-loop-rescue?sort=semver&label=release)](https://github.com/citydirector/dsh-loop-rescue/releases) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![DSH plugin](https://img.shields.io/badge/DSH%20plugin-%E2%89%A50.1.7-blue)](https://github.com/topics/dsh-plugin)
 
-DSH 循环救援插件：模型陷入重复（`Now. / OK. / Emit. / Producing.` 轮转、段落刷屏）时，从流内部切断，**把循环部分从落盘内容里剪掉**，再自动续跑。
+A loop-rescue plugin for DSH (DeepSeek Harness). When the model falls into repetition (`Now. / OK. / Emit. / Producing.` rotations, the same paragraph over and over), it cuts the stream from the inside, **prunes the loop out of what gets written to the session log**, and resumes automatically.
 
-和单纯截断相比，关键区别是：被切断的那条消息在下一轮上下文里**不含循环**，模型不会再读一遍自己的复读，然后接着复读。
+The difference from a plain cut-off: the interrupted message that goes into the next turn's context **contains no loop**, so the model never re-reads its own repetition and carries on repeating.
 
-## 原理
+Requires **DSH 0.1.7 or newer**. Pure JS, no build step.
 
-agent-loop 组装 `assistant/message` 时，每个 block 的最终内容取自 `block-end` 的载荷，而不是之前流出的 delta。插件在 `llm/stream` 瀑布里包装模型调用：
+## Quick start
 
-1. 对每个推理/正文 block 跑流式检测器；
-2. 命中后闭合所有打开的 block：循环所在的 block 换成**剪到循环起点**的内容（可留一行标记），以 `stop` 结束流；
-3. 落盘的消息里只剩循环之前的有效内容。原始流仍完整保存在事件的 `stream` 记录里，轨迹视图可以查看；
-4. 等回合真正结束（`whenIdle()`）后，用 `followup()` 发一条带纠正语的续跑消息；
-5. 续跑的前 N 次请求可选地改用另一组采样参数；
-6. 连续救援达到上限就不再续跑，留一条提示。
+Use this **or** `@mrweicodes/dsh-loop-guard`, not both: with both on, loops get cut twice.
 
-为什么不事后改会话：`assistant/message` 不能携带 `sourceEventSeqs`，会话面的 replace 操作没法用 assistant 消息替换 assistant 消息。在 `block-end` 处剪，是唯一不破坏消息角色和工具调用配对的做法。
+1. **Install**: sidebar **Plugins** → Add plugin, and give it
+   ```
+   https://github.com/citydirector/dsh-loop-rescue
+   ```
+   Switch it on.
+2. The defaults work as they are. To watch before it acts, set `mode` to `observe` (see Configuration).
 
-### 检测规则
-
-| 规则 | 抓什么 | 剪在哪 |
-|---|---|---|
-| 短句池 `pool` | 最近 30 句里 ≥75% 是几种反复出现的短句（顺序可以变） | 回溯到这批短句第一次出现的位置 |
-| 逐字周期 `cycle` | 尾部是同一段文字的逐字重复，周期 16–4000 字符，重复 ≥3 遍，总长 ≥600 | 保留第一份，从第二份开始剪 |
-
-防误伤：
-
-- 中文句号直接断句，英文句号后面要跟空白才断；
-- 纯符号行（`|---|`、`}`）不计入统计；
-- 正文中的列表项、表格行、引用行不计入统计；
-- 正文中的 ``` 代码块内部完全跳过；
-- 短句池至少要有两种句子在轮转；
-- 打开的 block 里有工具调用时不切，因为闭合半截工具调用会让宿主执行参数不完整的调用。
-
-## 安装
-
-和 `@mrweicodes/dsh-loop-guard` **二选一**，两者同时开会重复切断：
+From the command line:
 
 ```powershell
 dsh plugin --profile web remove @mrweicodes/dsh-loop-guard
-dsh plugin --profile web add -w github:citydirector/dsh-loop-rescue
+dsh plugin --profile web add -w github:citydirector/dsh-loop-rescue#v0.1.0
 ```
 
-装完重启 `dsh web`。本仓库是纯 JS，没有构建步骤，不需要放行 pnpm 构建脚本。指定版本可以用 `github:citydirector/dsh-loop-rescue#v0.1.0`。
+Restart `dsh web` after a command-line install. No pnpm build scripts need approving.
 
-## 配置
+## Configuration
 
-默认配置即可使用。需要调整时写进 profile 的 `cordis.patch.yml`：
+The defaults work as they are. To change them, write to the profile's `cordis.patch.yml`:
 
 ```yaml
 - set:
     - id: loop-rescue
       config:
-        mode: rescue              # rescue：切+剪+续跑 | cut：切+剪 | observe：只记日志
+        mode: rescue              # rescue: cut + prune + resume | cut: cut + prune | observe: log only
         watch: both               # both | reasoning | text
-        marker: true              # 剪除处留「〔已删除 N 字重复思考〕」
-        maxConsecutiveRescues: 3  # 连续救援上限，出现一次正常调用就清零
-        stallCalls: 3             # 连续几次只思考无产出就提示继续；0 关闭
+        marker: true              # leave a "〔N chars of repeated reasoning removed〕" line where it pruned
+        maxConsecutiveRescues: 3  # cap on back-to-back rescues; one normal call resets it
+        stallCalls: 3             # nudge after this many reasoning-only calls with no output; 0 = off
         stallMinReasoningChars: 1024
-        retryTemperature: 1.0     # 续跑请求改用的温度；不填不改
-        retryReasoningEffort: low # 续跑请求改用的推理强度；不填不改
-        retryRequests: 1          # 续跑后几次请求使用上面两项
+        retryTemperature: 1.0     # temperature for the resume request; unset = unchanged
+        retryReasoningEffort: low # reasoning effort for the resume request; unset = unchanged
+        retryRequests: 1          # how many requests after a resume use the two settings above
         language: auto            # auto | zh | en
-        detector:                 # 检测阈值，一般不用动
+        detector:                 # detection thresholds; rarely need changing
           poolWindow: 30
           poolMinCoverage: 0.75
           cycleMinChars: 600
 ```
 
-建议先用 `mode: observe` 跑一两天，看日志里的 `loop-rescue: ... loop detected` 是不是都是真循环，再切到 `rescue`。
+Consider running `mode: observe` for a day or two first, check that every `loop-rescue: ... loop detected` line in the log is a real loop, then switch to `rescue`.
 
-## 离线扫描
+## How it works
 
-用插件同一份检测器复跑历史会话，看会在哪里剪：
+When the agent loop assembles an `assistant/message`, each block's final content comes from the `block-end` payload, not from the deltas streamed before it. The plugin wraps the model call in the `llm/stream` waterfall:
+
+1. It runs a streaming detector on every reasoning and text block.
+2. On a hit it closes every open block: the looping block is replaced by its content **pruned back to where the loop started** (optionally with a one-line marker), and the stream ends with `stop`.
+3. The message written to the log holds only the useful content before the loop. The raw stream is still kept in full in the event's `stream` record, where the trajectory view can show it.
+4. Once the turn has really ended (`whenIdle()`), it sends a resume message with a correction via `followup()`.
+5. The first N requests after a resume can use a different set of sampling parameters.
+6. After the cap on back-to-back rescues it stops resuming and leaves a note.
+
+Why not edit the session afterwards: an `assistant/message` cannot carry `sourceEventSeqs`, so the session surface's replace operation cannot swap one assistant message for another. Pruning at `block-end` is the only way that keeps message roles and tool-call pairing intact.
+
+### Detection rules
+
+| Rule | Catches | Prunes from |
+|---|---|---|
+| Phrase pool `pool` | ≥75% of the last 30 sentences are a handful of recurring short phrases (in any order) | Back to where that batch of phrases first appeared |
+| Verbatim cycle `cycle` | The tail is the same text repeated verbatim, period 16–4000 chars, ≥3 repeats, ≥600 chars in total | Keeps the first copy, prunes from the second |
+
+Guarding against false positives:
+
+- A Chinese full stop always ends a sentence; an English period only when followed by whitespace.
+- Symbol-only lines (`|---|`, `}`) are not counted.
+- List items, table rows and quote lines in the text are not counted.
+- The inside of ``` code blocks in the text is skipped entirely.
+- The phrase pool needs at least two different phrases rotating.
+- It never cuts while an open block holds a tool call: closing a half-written tool call would make the host run it with incomplete arguments.
+
+## Offline scan
+
+Replay past sessions through the same detector the plugin uses, to see where it would cut:
 
 ```powershell
-node tools/scan-session.mjs <会话文件或目录>          # 只列命中
-node tools/scan-session.mjs <会话文件或目录> --all    # 连未命中一起列
-node tools/scan-session.mjs <会话文件> --json
+node tools/scan-session.mjs <session file or directory>          # hits only
+node tools/scan-session.mjs <session file or directory> --all    # hits and misses
+node tools/scan-session.mjs <session file> --json
 ```
 
-支持纯 jsonl 和 zstd 压缩的会话文件（zstd 需要 Node 22.15+）。脚本只依赖 `src/detector.js`，普通 node 就能运行。
+Reads plain jsonl and zstd-compressed session files (zstd needs Node 22.15+). The script only depends on `src/detector.js` and runs on plain node.
 
-## 救回已经嗝屁的会话
+## Cleaning loops already in the history
 
-插件只能拦住新的循环；历史里已经提交的循环会被模型继续模仿。DSH 发给模型的请求是会话日志的冻结投影，插件改不了，所以用离线脚本在 **DSH 完全退出后** 直接清洗会话文件。没装过插件的老会话同样适用。
+The plugin only stops new loops; loops already committed to the history keep being imitated by the model. What DSH sends the model is a frozen projection of the session log, which a plugin cannot change, so the session files have to be cleaned offline **with DSH fully closed**. This works for old sessions that never had the plugin too.
+
+The recommended tool is [dsh-session-manager](https://github.com/citydirector/dsh-session-manager) (`dsm loops`, a single-file exe on Windows): the same detection rules, plus upgrading, archiving and repairing broken sessions.
+
+This repository also ships a lightweight script (Node 22.15+, v4 sessions only):
 
 ```powershell
-node tools/clean-session.mjs            # 自动找数据目录，列出有循环的会话（标题 / 最后使用时间 / 循环段数），按序号选，回车=最新
-node tools/clean-session.mjs --dry-run  # 只看会改哪里
-node tools/clean-session.mjs --undo     # 从备份恢复
+node tools/clean-session.mjs            # list sessions with loops, pick by number; Enter = newest
+node tools/clean-session.mjs --dry-run  # show what would change
+node tools/clean-session.mjs --undo     # restore from the backup
 ```
 
-Windows 下也可以双击 `tools\clean-session.cmd`，或把某个会话文件夹拖到它上面。
+- On Windows you can also double-click `tools\clean-session.cmd`, or drop a session folder onto it; if it cannot find the data directory, pass `--data <data directory>`.
+- Only matching `assistant/message` events change: text and reasoning are cut back to where the loop started, `data.stream` is cut to match, and the message's `source.replayState` is removed. Every other line stays byte-for-byte the same.
+- It backs up to `<data directory>\sessions-loop-rescue-backup\` first, and refuses while DSH is running (`--force` skips that check; not recommended).
+- Versions before 2026-10-17 read only the first frame of a compressed log and wrote the result as a single frame, which DSH treats as corrupt and hides. That is fixed; `dsm repair` brings hidden sessions back.
 
-- 数据目录自动在 `D:\dsh-desktop\data`、`D:\dsh-portable\data` 等位置查找 `sessions\`；找不到时用 `--data <数据目录>` 指定。
-- 只改命中的 `assistant/message`：正文/推理截到循环起点，`data.stream` 同步截断，并移除该消息的 `source.replayState`（里面有原文副本）。其余行逐字节不变。
-- 改之前先备份到 `<数据目录>\sessions-loop-rescue-backup\`；检测到 DSH 进程在运行会拒绝执行（`--force` 可跳过，不推荐）。
-- 目前只支持 v4 会话文件；需要 Node 22.15+。
+## Known limitations
 
-## 测试
+- Loop text already streamed into the chat is replaced by the pruned version once the message is committed, but exactly how it redraws depends on the DSH front-end version.
+- Loops that span steps (every step is "say a line → call the same tool") are out of scope; that is the job of the built-in `guard/repeat-tool-reminder`.
+- `retryTemperature` needs an adapter that supports temperature. DSH has no generic field for Ollama's repetition penalty and similar parameters, so they cannot be set from here.
+
+## Development
 
 ```bash
 npm install
 npm test
 ```
 
-## 已知限制
+## Related projects
 
-- 聊天区已经流出的循环文字在消息提交后会被替换成剪过的版本，但具体怎么重绘取决于 DSH 前端版本；
-- 跨步骤的循环（每一步都是「说一句 → 调同一个工具」）不在本插件范围内，那是内置 `guard/repeat-tool-reminder` 的职责；
-- `retryTemperature` 需要适配器支持 temperature；Ollama 的重复惩罚等参数 DSH 目前没有通用字段，无法从这里设置。
+- [dsh-remote-access-proxy](https://github.com/citydirector/dsh-remote-access-proxy): Use DSH from your phone, tablet, or another computer
+- [deepinfra-fusion-proxy](https://github.com/citydirector/deepinfra-fusion-proxy): DeepInfra Standard / Flex switching with automatic fallback, per session
+- [dsh-session-manager](https://github.com/citydirector/dsh-session-manager): Offline session manager: upgrade, archive, trash, loop cleanup, broken-tail repair
 
-## 许可
+## License
 
-MIT
+[MIT](LICENSE)
