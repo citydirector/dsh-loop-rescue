@@ -30,6 +30,7 @@ import { fileURLToPath } from 'node:url'
 import { createInterface } from 'node:readline/promises'
 import * as zlib from 'node:zlib'
 import { detectInText } from '../src/detector.js'
+import { decodeLog, encodeLog } from './zstd-log.mjs'
 
 const argv = process.argv.slice(2)
 const flag = (n) => argv.includes(n)
@@ -45,17 +46,10 @@ const die = (m) => { console.error(m); rl.close(); process.exit(1) }
 
 // ---------- 读写 ----------
 function readSession(path) {
-  const buf = readFileSync(path)
-  if (buf.length >= 4 && buf.readUInt32LE(0) === 0xfd2fb528) {
-    if (typeof zlib.zstdDecompressSync !== 'function') die('需要 Node 22.15+（内置 zstd）。')
-    return zlib.zstdDecompressSync(buf).toString('utf8')
-  }
-  return buf.toString('utf8')
+  try { return decodeLog(readFileSync(path)) } catch (e) { die(e.message) }
 }
 function writeSession(path, text) {
-  const out = path.endsWith('.zstd')
-    ? zlib.zstdCompressSync(Buffer.from(text, 'utf8'), { params: { [zlib.constants.ZSTD_c_checksumFlag]: 1 } })
-    : Buffer.from(text, 'utf8')
+  const out = encodeLog(text, path.endsWith('.zstd'))
   const tmp = `${path}.loop-rescue-tmp`
   writeFileSync(tmp, out)
   renameSync(tmp, path)
