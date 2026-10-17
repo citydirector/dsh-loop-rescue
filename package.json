@@ -1,7 +1,7 @@
 {
   "name": "dsh-loop-rescue",
   "version": "0.1.0",
-  "description": "DSH 循环救援插件：模型陷入重复时从流内切断，把循环部分从落盘内容中剪掉，再自动续跑。",
+  "description": "DSH plugin that cuts model repetition loops mid-stream, prunes the loop out of the committed message, and resumes automatically.",
   "type": "module",
   "main": "src/index.js",
   "exports": {
@@ -9,7 +9,7 @@
     "./detector": "./src/detector.js",
     "./package.json": "./package.json"
   },
-  "files": ["src", "tools", "cordis.patch.yml", "README.md", "LICENSE"],
+  "files": ["src", "tools", "cordis.patch.yml", "README.md", "README.zh-CN.md", "LICENSE"],
   "scripts": {
     "test": "node --test test/*.spec.mjs",
     "scan": "node tools/scan-session.mjs"
