@@ -2,17 +2,19 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-[![Release](https://img.shields.io/github/v/tag/citydirector/dsh-loop-rescue?sort=semver&label=release)](https://github.com/citydirector/dsh-loop-rescue/releases) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![DSH plugin](https://img.shields.io/badge/DSH%20plugin-%E2%89%A50.2.2--alpha.2-blue)](https://github.com/topics/dsh-plugin)
+[![Release](https://img.shields.io/github/v/tag/citydirector/dsh-loop-rescue?sort=semver&label=release)](https://github.com/citydirector/dsh-loop-rescue/releases) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![DSH plugin](https://img.shields.io/badge/DSH%20plugin-%E2%89%A50.2.1--rc.2-blue)](https://github.com/topics/dsh-plugin)
 
 A loop-rescue plugin for DSH (DeepSeek Harness). When the model falls into repetition (`Now. / OK. / Emit. / Producing.` rotations, the same paragraph over and over), it cuts the stream from the inside, **prunes the loop out of what gets written to the session log**, and resumes automatically.
 
 The difference from a plain cut-off: the interrupted message that goes into the next turn's context **contains no loop**, so the model never re-reads its own repetition and carries on repeating.
 
-Requires **DSH 0.2.2-alpha.2 or newer 0.2.x**. Pure JS, no build step.
+Requires **DSH 0.2.1-rc.2 or newer 0.2.x**. Pure JS, no build step.
 
 ## npm installation and updates
 
-Requires DSH 0.2.2-alpha.2 or a newer 0.2.x and Node.js 24.9+. Enter `dsh-loop-rescue` in **Plugins → Add plugin**, or run:
+The plugin runs on DSH 0.2.1, including 0.2.1-rc.3. Use the Plugins page version list when your DSH provides it. Otherwise, stop DSH and run `dsh plugin --profile web add dsh-loop-rescue@latest` (use `desktop` instead of `web` for Desktop), then restart. GitHub Actions publishing does not require an alpha DSH runtime.
+
+Requires DSH 0.2.1-rc.2 or a newer 0.2.x and Node.js 24.9+. Enter `dsh-loop-rescue` in **Plugins → Add plugin**, or run:
 
 ```sh
 dsh plugin --profile web add dsh-loop-rescue
