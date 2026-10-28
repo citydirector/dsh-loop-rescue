@@ -1,6 +1,6 @@
 {
   "name": "dsh-loop-rescue",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "DSH plugin that cuts model repetition loops mid-stream, prunes the loop out of the committed message, and resumes automatically.",
   "type": "module",
   "main": "src/index.js",
