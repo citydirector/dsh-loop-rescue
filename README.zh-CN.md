@@ -2,13 +2,23 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-[![Release](https://img.shields.io/github/v/tag/citydirector/dsh-loop-rescue?sort=semver&label=release)](https://github.com/citydirector/dsh-loop-rescue/releases) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![DSH plugin](https://img.shields.io/badge/DSH%20plugin-%E2%89%A50.1.7-blue)](https://github.com/topics/dsh-plugin)
+[![Release](https://img.shields.io/github/v/tag/citydirector/dsh-loop-rescue?sort=semver&label=release)](https://github.com/citydirector/dsh-loop-rescue/releases) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![DSH plugin](https://img.shields.io/badge/DSH%20plugin-%E2%89%A50.2.2--alpha.2-blue)](https://github.com/topics/dsh-plugin)
 
 DSH 循环救援插件：模型陷入重复（`Now. / OK. / Emit. / Producing.` 轮转、段落刷屏）时，从流内部切断，**把循环部分从落盘内容里剪掉**，再自动续跑。
 
 和单纯截断相比，关键区别是：被切断的那条消息在下一轮上下文里**不含循环**，模型不会再读一遍自己的复读，然后接着复读。
 
-需要 **DSH 0.1.7 或更新**。纯 JS，没有构建步骤。
+需要 **DSH 0.2.2-alpha.2 或更新的 0.2.x**。纯 JS，没有构建步骤。
+
+## npm 安装与更新
+
+需要 DSH 0.2.2-alpha.2 或更新的 0.2.x，以及 Node.js 24.9+。在 DSH「插件 → 添加插件」输入 `dsh-loop-rescue`，或运行：
+
+```sh
+dsh plugin --profile web add dsh-loop-rescue
+```
+
+旧版从 GitHub 安装的用户：先备份 profile 的 `cordis.patch.yml`，在插件页移除旧包并用上述 npm 包名重新添加，保持原 profile 与配置行 ID。配置仍由 profile 保存；重新添加后检查已保存的值。此后统一使用 DSH 插件页的版本列表与更新功能。更新完全由 DSH 管理。
 
 ## 快速开始
 
@@ -16,7 +26,7 @@ DSH 循环救援插件：模型陷入重复（`Now. / OK. / Emit. / Producing.` 
 
 1. **安装**：侧边栏 **插件** → 添加插件，填入
    ```
-   https://github.com/citydirector/dsh-loop-rescue
+   dsh-loop-rescue
    ```
    装完打开开关。
 2. 默认配置即可使用。想先观察，把 `mode` 设成 `observe`（见「配置」）。
@@ -25,7 +35,7 @@ DSH 循环救援插件：模型陷入重复（`Now. / OK. / Emit. / Producing.` 
 
 ```powershell
 dsh plugin --profile web remove @mrweicodes/dsh-loop-guard
-dsh plugin --profile web add -w github:citydirector/dsh-loop-rescue#v0.1.0
+dsh plugin --profile web add dsh-loop-rescue
 ```
 
 命令行装完重启 `dsh web`。不需要放行 pnpm 构建脚本。

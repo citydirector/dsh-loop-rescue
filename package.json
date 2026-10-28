@@ -1,6 +1,6 @@
 {
   "name": "dsh-loop-rescue",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "DSH plugin that cuts model repetition loops mid-stream, prunes the loop out of the committed message, and resumes automatically.",
   "type": "module",
   "main": "src/index.js",
@@ -9,24 +9,53 @@
     "./detector": "./src/detector.js",
     "./package.json": "./package.json"
   },
-  "files": ["src", "tools", "cordis.patch.yml", "README.md", "README.zh-CN.md", "LICENSE"],
+  "files": [
+    "src",
+    "tools",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh-CN.md",
+    "LICENSE"
+  ],
   "scripts": {
     "test": "node --test test/*.spec.mjs",
     "scan": "node tools/scan-session.mjs"
   },
-  "keywords": ["dsh", "dsh-plugin", "deepseek-harness", "loop", "repetition", "guard"],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "loop",
+    "repetition",
+    "guard"
+  ],
   "license": "MIT",
-  "repository": { "type": "git", "url": "git+https://github.com/citydirector/dsh-loop-rescue.git" },
-  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/citydirector/dsh-loop-rescue.git"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "^4.0.2",
-    "@deepseek-ai/dsh-llm": ">=0.1.7-alpha.1 <0.3.0"
+    "@deepseek-ai/cordis": "^4.0.6-alpha.1",
+    "@deepseek-ai/dsh-llm": ">=0.2.2-alpha.2 <0.3.0"
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "^3.18.1"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "^4.0.5",
-    "@deepseek-ai/dsh-llm": "0.2.1-rc.1"
+    "@deepseek-ai/cordis": "4.0.6-alpha.1",
+    "@deepseek-ai/dsh-llm": "0.2.2-alpha.2"
+  },
+  "engines": {
+    "node": ">=24.9.0",
+    "dsh": ">=0.2.2-alpha.2 <0.3.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
