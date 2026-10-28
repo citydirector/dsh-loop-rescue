@@ -2,13 +2,23 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-[![Release](https://img.shields.io/github/v/tag/citydirector/dsh-loop-rescue?sort=semver&label=release)](https://github.com/citydirector/dsh-loop-rescue/releases) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![DSH plugin](https://img.shields.io/badge/DSH%20plugin-%E2%89%A50.1.7-blue)](https://github.com/topics/dsh-plugin)
+[![Release](https://img.shields.io/github/v/tag/citydirector/dsh-loop-rescue?sort=semver&label=release)](https://github.com/citydirector/dsh-loop-rescue/releases) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![DSH plugin](https://img.shields.io/badge/DSH%20plugin-%E2%89%A50.2.2--alpha.2-blue)](https://github.com/topics/dsh-plugin)
 
 A loop-rescue plugin for DSH (DeepSeek Harness). When the model falls into repetition (`Now. / OK. / Emit. / Producing.` rotations, the same paragraph over and over), it cuts the stream from the inside, **prunes the loop out of what gets written to the session log**, and resumes automatically.
 
 The difference from a plain cut-off: the interrupted message that goes into the next turn's context **contains no loop**, so the model never re-reads its own repetition and carries on repeating.
 
-Requires **DSH 0.1.7 or newer**. Pure JS, no build step.
+Requires **DSH 0.2.2-alpha.2 or newer 0.2.x**. Pure JS, no build step.
+
+## npm installation and updates
+
+Requires DSH 0.2.2-alpha.2 or a newer 0.2.x and Node.js 24.9+. Enter `dsh-loop-rescue` in **Plugins → Add plugin**, or run:
+
+```sh
+dsh plugin --profile web add dsh-loop-rescue
+```
+
+For an existing GitHub installation, back up the profile's `cordis.patch.yml`, remove the old package in Plugins, and add the npm package above in the same profile. Keep the configuration row IDs and verify the saved settings after reinstalling. Subsequent updates use DSH's version list and update operation. Updates are handled entirely by DSH.
 
 ## Quick start
 
@@ -16,7 +26,7 @@ Use this **or** `@mrweicodes/dsh-loop-guard`, not both: with both on, loops get 
 
 1. **Install**: sidebar **Plugins** → Add plugin, and give it
    ```
-   https://github.com/citydirector/dsh-loop-rescue
+   dsh-loop-rescue
    ```
    Switch it on.
 2. The defaults work as they are. To watch before it acts, set `mode` to `observe` (see Configuration).
@@ -25,7 +35,7 @@ From the command line:
 
 ```powershell
 dsh plugin --profile web remove @mrweicodes/dsh-loop-guard
-dsh plugin --profile web add -w github:citydirector/dsh-loop-rescue#v0.1.0
+dsh plugin --profile web add dsh-loop-rescue
 ```
 
 Restart `dsh web` after a command-line install. No pnpm build scripts need approving.
