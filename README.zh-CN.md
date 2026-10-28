@@ -2,17 +2,19 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-[![Release](https://img.shields.io/github/v/tag/citydirector/dsh-loop-rescue?sort=semver&label=release)](https://github.com/citydirector/dsh-loop-rescue/releases) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![DSH plugin](https://img.shields.io/badge/DSH%20plugin-%E2%89%A50.2.2--alpha.2-blue)](https://github.com/topics/dsh-plugin)
+[![Release](https://img.shields.io/github/v/tag/citydirector/dsh-loop-rescue?sort=semver&label=release)](https://github.com/citydirector/dsh-loop-rescue/releases) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![DSH plugin](https://img.shields.io/badge/DSH%20plugin-%E2%89%A50.2.1--rc.2-blue)](https://github.com/topics/dsh-plugin)
 
 DSH 循环救援插件：模型陷入重复（`Now. / OK. / Emit. / Producing.` 轮转、段落刷屏）时，从流内部切断，**把循环部分从落盘内容里剪掉**，再自动续跑。
 
 和单纯截断相比，关键区别是：被切断的那条消息在下一轮上下文里**不含循环**，模型不会再读一遍自己的复读，然后接着复读。
 
-需要 **DSH 0.2.2-alpha.2 或更新的 0.2.x**。纯 JS，没有构建步骤。
+需要 **DSH 0.2.1-rc.2 或更新的 0.2.x**。纯 JS，没有构建步骤。
 
 ## npm 安装与更新
 
-需要 DSH 0.2.2-alpha.2 或更新的 0.2.x，以及 Node.js 24.9+。在 DSH「插件 → 添加插件」输入 `dsh-loop-rescue`，或运行：
+插件本身兼容 DSH 0.2.1（包括 0.2.1-rc.3）。若当前 DSH 提供 npm 版本列表，请在插件页更新；否则关闭 DSH 后运行 `dsh plugin --profile web add dsh-loop-rescue@latest`（桌面版将 `web` 换成 `desktop`），再重启。GitHub Actions 自动发包不要求升级 DSH 到 alpha 版本。
+
+需要 DSH 0.2.1-rc.2 或更新的 0.2.x，以及 Node.js 24.9+。在 DSH「插件 → 添加插件」输入 `dsh-loop-rescue`，或运行：
 
 ```sh
 dsh plugin --profile web add dsh-loop-rescue

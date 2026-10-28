@@ -1,6 +1,6 @@
 {
   "name": "dsh-loop-rescue",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "DSH plugin that cuts model repetition loops mid-stream, prunes the loop out of the committed message, and resumes automatically.",
   "type": "module",
   "main": "src/index.js",
@@ -40,19 +40,20 @@
     }
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "^4.0.6-alpha.1",
-    "@deepseek-ai/dsh-llm": ">=0.2.2-alpha.2 <0.3.0"
+    "@deepseek-ai/cordis": "^4.0.5 || ^4.0.6-alpha.1",
+    "@deepseek-ai/dsh-llm": ">=0.2.1-rc.2 <0.3.0 || >=0.2.2-alpha.2 <0.3.0"
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "^3.18.1"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "4.0.6-alpha.1",
-    "@deepseek-ai/dsh-llm": "0.2.2-alpha.2"
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.3",
+    "semver": "^7.8.5"
   },
   "engines": {
     "node": ">=24.9.0",
-    "dsh": ">=0.2.2-alpha.2 <0.3.0"
+    "dsh": ">=0.2.1-rc.2 <0.3.0"
   },
   "publishConfig": {
     "access": "public",

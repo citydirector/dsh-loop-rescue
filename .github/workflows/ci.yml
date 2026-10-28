@@ -7,11 +7,19 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - llm: 0.2.1-rc.3
+            cordis: 4.0.5
+          - llm: 0.2.2-alpha.2
+            cordis: 4.0.6-alpha.1
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
       - run: npm ci --ignore-scripts --legacy-peer-deps
+      - run: npm install --no-save --package-lock=false --ignore-scripts --legacy-peer-deps @deepseek-ai/dsh-llm@${{ matrix.llm }} @deepseek-ai/cordis@${{ matrix.cordis }}
       - run: npm test
       - run: npm pack --dry-run
