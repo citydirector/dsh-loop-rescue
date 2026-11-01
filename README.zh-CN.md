@@ -1,6 +1,8 @@
 # dsh-loop-rescue
 
-[English](README.md) · 简体中文 · [npm](https://www.npmjs.com/package/dsh-loop-rescue)
+[English](README.md) · **简体中文**
+
+[![npm](https://img.shields.io/npm/v/dsh-loop-rescue)](https://www.npmjs.com/package/dsh-loop-rescue) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![DSH plugin](https://img.shields.io/badge/DSH%20plugin-%E2%89%A50.2.1--rc.2-blue)](https://github.com/topics/dsh-plugin)
 
 在 DSH 模型陷入复读时，停止当前输出，剪掉写入会话的重复内容，再自动续跑。适用于同一段推理、短句或正文反复出现的情况。
 
@@ -74,6 +76,19 @@ npm test
 ~~~
 
 CI 同时检查 DSH 0.2.1-rc.3 与 alpha 运行时的兼容性。源码入口是 [src/index.js](src/index.js)，检测器是 [src/detector.js](src/detector.js)。
+
+## 相关项目
+
+[@citydirector](https://github.com/citydirector) 的其它 DeepSeek Harness（DSH）项目：
+
+| 项目 | 类型 | 用途 |
+|---|---|---|
+| [DSH-build](https://github.com/citydirector/DSH-build) | 构建 | DSH 的 Windows 便携版 / 桌面版绿色构建，每天跟随上游打补丁、冒烟、发布 |
+| [dsh-remote-access-proxy](https://github.com/citydirector/dsh-remote-access-proxy) | 插件 | 在手机、平板或其它电脑上用浏览器访问 DSH Web GUI |
+| [deepinfra-fusion-proxy](https://github.com/citydirector/deepinfra-fusion-proxy) | 插件 | DeepInfra Standard / Flex 按会话切换与自动回退 |
+| [dsh-pwsh-plugin](https://github.com/citydirector/dsh-pwsh-plugin) | 插件 | 常驻 pwsh 会话工具（`pwsh_run`），附带给 `bash` 补写边界的 WSL 垫片 |
+| [ui-locate-mcp](https://github.com/citydirector/ui-locate-mcp) | MCP 插件 | 按界面文字和图标给出精确像素坐标，用于桌面操作 |
+| [dsh-session-manager](https://github.com/citydirector/dsh-session-manager) | 离线工具 | 离线升级、归档、回收站、清洗循环、修复烂尾 / 隐藏会话 |
 
 ## 许可证
 

@@ -1,6 +1,8 @@
 # dsh-loop-rescue
 
-English · [简体中文](README.zh-CN.md) · [npm](https://www.npmjs.com/package/dsh-loop-rescue)
+**English** · [简体中文](README.zh-CN.md)
+
+[![npm](https://img.shields.io/npm/v/dsh-loop-rescue)](https://www.npmjs.com/package/dsh-loop-rescue) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![DSH plugin](https://img.shields.io/badge/DSH%20plugin-%E2%89%A50.2.1--rc.2-blue)](https://github.com/topics/dsh-plugin)
 
 Stop repetitive DSH model output, prune the repetition from the committed message, and resume automatically. It catches recurring short phrases, reasoning and repeated passages of text.
 
@@ -48,7 +50,7 @@ The profile's `cordis.patch.yml` stores settings under row ID `loop-rescue`:
 
 The `detector` object adjusts thresholds; defaults usually suffice. See [advanced documentation](docs/advanced.md) for full examples, detection rules and offline tools.
 
-## Updates
+## Updating
 
 Install by npm name. Use DSH's version list when available. Otherwise, stop DSH and run:
 
@@ -58,7 +60,7 @@ dsh plugin --profile web add dsh-loop-rescue@latest
 
 To migrate a GitHub dependency, back up the profile's `cordis.patch.yml`, remove the old package, add the npm name, and verify saved settings. Maintainer publishing instructions are in [PUBLISHING.md](PUBLISHING.md).
 
-## Limitations
+## Known limitations
 
 - The committed message contains the pruned content; redrawing already streamed output depends on the DSH front end.
 - Open tool calls prevent a cut, keeping incomplete arguments from executing.
@@ -74,6 +76,19 @@ npm test
 ~~~
 
 CI covers DSH 0.2.1-rc.3 and an alpha runtime. Entry point: [src/index.js](src/index.js); detector: [src/detector.js](src/detector.js).
+
+## Related projects
+
+More DeepSeek Harness (DSH) projects from [@citydirector](https://github.com/citydirector):
+
+| Project | Kind | What it does |
+|---|---|---|
+| [DSH-build](https://github.com/citydirector/DSH-build) | Build | Portable and desktop Windows builds of DSH, patched, smoke-tested and released daily |
+| [dsh-remote-access-proxy](https://github.com/citydirector/dsh-remote-access-proxy) | Plugin | Use the DSH Web GUI from your phone, tablet, or another computer |
+| [deepinfra-fusion-proxy](https://github.com/citydirector/deepinfra-fusion-proxy) | Plugin | DeepInfra Standard / Flex switching with automatic fallback, per session |
+| [dsh-pwsh-plugin](https://github.com/citydirector/dsh-pwsh-plugin) | Plugin | Persistent pwsh session tool (`pwsh_run`), plus a WSL write boundary for `bash` |
+| [ui-locate-mcp](https://github.com/citydirector/ui-locate-mcp) | MCP plugin | Pixel-exact coordinates for on-screen text and icons, for desktop automation |
+| [dsh-session-manager](https://github.com/citydirector/dsh-session-manager) | Offline tool | Upgrade, archive, trash, loop cleanup and repair for DSH sessions |
 
 ## License
 
