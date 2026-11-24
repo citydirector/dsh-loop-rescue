@@ -82,6 +82,19 @@ function notice(text, summary) {
 }
 
 /**
+ * 用户是否已有排队输入。宿主的 Inbox 接口只承诺 `nextTurn` / `nextStep` 两个列表；
+ * `hasPending` 只是 dsh-agent-loop 实现类上的 getter，不在接口里，所以两边都看。
+ * 字段缺失按没有排队处理。
+ * @param {any} inbox `agent.inbox`
+ */
+function hasQueuedInput(inbox) {
+  if (inbox === undefined || inbox === null) return false
+  if (inbox.hasPending === true) return true
+  return (Array.isArray(inbox.nextTurn) && inbox.nextTurn.length > 0)
+    || (Array.isArray(inbox.nextStep) && inbox.nextStep.length > 0)
+}
+
+/**
  * @typedef {object} RescueState
  * @property {number} consecutive 连续救援次数
  * @property {number} stall 连续空转调用次数
@@ -117,7 +130,7 @@ export function apply(ctx, config) {
     const idle = agent.whenIdle()
     void Promise.resolve(idle).then(() => {
       if (state.generation !== generation) return
-      if (agent.inbox?.hasPending) return
+      if (hasQueuedInput(agent.inbox)) return
       agent.followup(message)
       ctx.logger.debug('loop-rescue: resumed after cut')
     }).catch((error) => {
