@@ -73,7 +73,7 @@ npm ci --ignore-scripts --legacy-peer-deps
 npm test
 ~~~
 
-CI 同时检查 DSH 0.2.1-rc.3 与 alpha 运行时的兼容性。源码入口是 [src/index.js](src/index.js)，检测器是 [src/detector.js](src/detector.js)。
+CI 在 Node.js 24 和 26 上同时检查 DSH 0.2.1-rc.3 与 alpha 运行时的兼容性。源码入口是 [src/index.js](src/index.js)，检测器是 [src/detector.js](src/detector.js)。
 
 ## 许可证
 
