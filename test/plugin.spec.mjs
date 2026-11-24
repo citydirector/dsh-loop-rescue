@@ -67,6 +67,36 @@ test('续跑前若已有新调用，则不重复续跑', async () => {
   assert.equal(h.agent.followups.length, 0)
 })
 
+// 宿主的 Inbox 接口只承诺 nextTurn / nextStep 两个列表；hasPending 只是实现类的 getter。
+const queued = { id: 'm-queued', role: 'user', content: [{ type: 'text', text: '用户排队的消息' }], source: { kind: 'user' } }
+
+for (const [label, inbox] of [
+  ['nextTurn 有排队', { nextTurn: [queued], nextStep: [] }],
+  ['nextStep 有排队', { nextTurn: [], nextStep: [queued] }],
+  ['只有 hasPending 为真', { hasPending: true }],
+]) {
+  test(`续跑前用户已有排队消息（${label}）：不续跑`, async () => {
+    const h = harness()
+    await h.run(loopChunks())
+    h.agent.inbox = inbox
+    h.idle(); await new Promise((r) => setTimeout(r, 0))
+    assert.equal(h.agent.followups.length, 0)
+  })
+}
+
+for (const [label, inbox] of [
+  ['两个列表都为空', { nextTurn: [], nextStep: [] }],
+  ['没有 inbox', undefined],
+]) {
+  test(`续跑前没有排队消息（${label}）：照常续跑`, async () => {
+    const h = harness()
+    await h.run(loopChunks())
+    h.agent.inbox = inbox
+    h.idle(); await new Promise((r) => setTimeout(r, 0))
+    assert.equal(h.agent.followups.length, 1)
+  })
+}
+
 test('打开的工具调用块存在时不切', async () => {
   const h = harness()
   const chunks = loopChunks()

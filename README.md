@@ -75,7 +75,7 @@ npm ci --ignore-scripts --legacy-peer-deps
 npm test
 ~~~
 
-CI covers DSH 0.2.1-rc.3 and an alpha runtime. Entry point: [src/index.js](src/index.js); detector: [src/detector.js](src/detector.js).
+CI covers DSH 0.2.1-rc.3 and an alpha runtime, each on Node.js 24 and 26. Entry point: [src/index.js](src/index.js); detector: [src/detector.js](src/detector.js).
 
 ## Related projects
 
